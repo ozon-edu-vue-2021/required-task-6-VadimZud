@@ -2,22 +2,17 @@
   <div id="app">
     <vue-table
       :rows="rows"
-      :columns="['id', 'login', 'html_url']"
-      :columnsHeads="{ login: 'Логин' }"
+      :columns="columns"
+      :columnsHeads="columnsHeads"
       :getKey="(row) => row.id"
     >
       <template #login-head>
         <div>Логин<sort-control column="login" :index="1" /></div>
       </template>
-      <template #html_url-head>
-        Профиль<br />
-        (Путь)
+      <template #email-cell="{ row }">
+        <a :href="`mailto:${row.email}`">{{ row.email }}</a>
       </template>
-      <template #html_url-cell="{ row }">
-        <a :href="row.html_url">{{ row.html_url }}</a>
-      </template>
-      <template #start-tbody><table-loader :colspan="3" /></template>
-      <template #end-tbody><table-loader :colspan="3" /></template>
+      <template #end-tbody><table-loader :colspan="rowSize" /></template>
     </vue-table>
   </div>
 </template>
@@ -25,28 +20,49 @@
 <script>
 import VueTable from "./components/VueTable.vue";
 import TableLoader from "./components/loaders/TableLoader.vue";
+import Filter from "./components/filters/Filter.vue";
+import RangeFilter from "./components/filters/RangeFilter.vue";
+import SwitchSorter from "./components/sorters/SwitchSorter.vue";
+import Filterable from "./mixins/Filterable";
+import Sortable from "./mixins/Sortable";
+import { updateData } from "./data_sourses/TestSource";
 
 export default {
   name: "App",
+  mixins: [Filterable, Sortable],
   data() {
     return {
       rows: [],
+      columns: ["id", "age", "name", "login", "email"],
+      columnsHeads: {
+        id: "ID",
+        age: "Возраст",
+        name: "Имя",
+        login: "Логин",
+        email: "EMail",
+      },
+      bottomLoader: false,
     };
   },
-  async created() {
-    const response = await fetch("https://api.github.com/users", {
-      Accept: "application/vnd.github.v3+json",
-    });
-    this.rows = await response.json();
+  computed: {
+    rowSize() {
+      return this.columns.length;
+    },
   },
-  methods: {
-    log(obj) {
-      console.log(obj);
+  watch: {
+    filters() {
+      updateData(this);
+    },
+    sorts() {
+      updateData(this);
     },
   },
   components: {
     VueTable,
     TableLoader,
+    Filter,
+    RangeFilter,
+    SwitchSorter,
   },
 };
 </script>
