@@ -1,6 +1,8 @@
 <template>
   <table>
+    <slot name="start-table"></slot>
     <thead>
+      <slot name="start-thead"></slot>
       <tr>
         <th
           v-for="column in columns"
@@ -8,11 +10,14 @@
           :class="headsClasses[column]"
           :style="headsStyles[column]"
         >
+          <slot :name="`start-${column}-head`"></slot>
           <slot :name="`${column}-head`">
             {{ columnsHeads[column] || column }}
           </slot>
+          <slot :name="`end-${column}-head`"></slot>
         </th>
       </tr>
+      <slot name="end-thead"></slot>
     </thead>
     <tbody>
       <slot name="start-tbody"></slot>
@@ -23,13 +28,16 @@
           :class="cellsClasses[column]"
           :styles="cellsStyles[column]"
         >
+          <slot :name="`start-${column}-cell`"></slot>
           <slot :name="`${column}-cell`" :row="row">
             {{ row[column] }}
           </slot>
+          <slot :name="`end-${column}-cell`"></slot>
         </td>
       </tr>
       <slot name="end-tbody"></slot>
     </tbody>
+    <slot name="end-table"></slot>
   </table>
 </template>
 

@@ -8,9 +8,6 @@
     >
       <template #login-head>
         <div>Логин<sort-control column="login" :index="1" /></div>
-        <text-filter column="aga" @filter="log($event)" />
-        <date-filter column="ugu" @filter="log($event)" />
-        <number-filter column="ads" @filter="log($event)" />
       </template>
       <template #html_url-head>
         Профиль<br />
@@ -27,11 +24,7 @@
 
 <script>
 import VueTable from "./components/VueTable.vue";
-import TextFilter from "./components/filters/TextFilter.vue";
-import DateFilter from "./components/filters/DateFilter.vue";
 import TableLoader from "./components/loaders/TableLoader.vue";
-import NumberFilter from "./components/filters/NumberFilter.vue";
-import SortControl from "./components/SortControl.vue";
 
 export default {
   name: "App",
@@ -53,11 +46,7 @@ export default {
   },
   components: {
     VueTable,
-    TextFilter,
-    DateFilter,
     TableLoader,
-    NumberFilter,
-    SortControl,
   },
 };
 </script>
