@@ -11,7 +11,7 @@
 <script>
 import BaseFilter from "./BaseFilter";
 export default {
-  name: "Filter",
+  name: "SingleFilter",
   props: {
     type: {
       type: String,

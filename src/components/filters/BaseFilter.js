@@ -2,7 +2,7 @@ export default {
     props: {
         filter: {
             type: String,
-            required: true,
+            default: "",
         },
         column: {
             type: String,

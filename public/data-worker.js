@@ -59,26 +59,36 @@ const comparators = {
 
 const columns = ["id", "age", "name", "login", "email"];
 
-onmessage = async function (e) {
-    const response = await fetch("data.json");
-    const data = await response.json();
+let data;
+let xhr = new XMLHttpRequest();
+xhr.open("GET", "data.json");
+xhr.responseType = 'json';
+xhr.send();
+xhr.onload = function () {
+    data = xhr.response;
+    postMessage("data loaded");
+}
 
+onmessage = async function (e) {
     const filters = e.data.filters;
 
-    const filtered = data.filter((item) => {
-        for (let column of columns) {
-            if (column in filters && !checkers[column](item[column], filters[column])) {
-                return false;
+    let filtered = data;
+    if (filters && filters.length) {
+        filtered = data.filter((item) => {
+            for (let column of columns) {
+                if (column in filters && !checkers[column](item[column], filters[column])) {
+                    return false;
+                }
             }
-        }
-        return true;
-    });
+            return true;
+        });
+    }
 
     const sorts = e.data.sorts;
     const sortsOrder = e.data.sortsOrder;
 
     let sorted = filtered;
-    if (sortsOrder.length) {
+    if (sortsOrder && sortsOrder.length) {
         sorted.sort((item1, item2) => {
             for (let column of sortsOrder) {
                 const comparationRes = comparators[column](item1[column], item2[column]);
@@ -90,5 +100,5 @@ onmessage = async function (e) {
         });
     }
 
-    this.postMessage(sorted);
+    postMessage(sorted);
 }

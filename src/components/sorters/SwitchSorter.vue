@@ -8,9 +8,9 @@
 
 <script>
 import BaseSwitchSorter from "./BaseSwitchSorter";
-import Unsorted from "../assets/unsorted.svg";
-import Decrease from "../assets/decrease.svg";
-import Increase from "../assets/increase.svg";
+import Unsorted from "../../assets/unsorted.svg";
+import Decrease from "../../assets/decrease.svg";
+import Increase from "../../assets/increase.svg";
 
 const icons = {
   no: Unsorted,
@@ -32,8 +32,13 @@ export default {
       return icons[this.sort];
     },
     showIndex() {
-      return sort !== "no" && index !== null;
+      return this.sort !== "no" && this.index !== null;
     },
+  },
+  components: {
+    Unsorted,
+    Decrease,
+    Increase,
   },
 };
 </script>

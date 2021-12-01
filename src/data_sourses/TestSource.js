@@ -1,12 +1,20 @@
+let worker;
+if (window.Worker) {
+    worker = new Worker("data-worker.js");
+}
+
 function updateDataWithoutDebounce(data) {
-    if (window.Worker) {
-        const worker = new Worker("data-worker.js");
-        worker.onmessage = function (e) {
-            data.rows = e.data;
-            data.bottomLoader = false;
-        }
-        worker.postMessage(data);
+    worker.onmessage = function (e) {
+        data.rows = e.data;
+        data.bottomLoader = false;
     }
+    const message = {
+        sorts: data.sorts,
+        sortsOrder: data.sortsOrder,
+        filters: data.filters,
+    };
+    console.log(message);
+    worker.postMessage(message);
 }
 
 let timeout;

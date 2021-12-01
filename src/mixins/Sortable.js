@@ -17,6 +17,8 @@ export default {
             } else {
                 if (!(column in this.sorts)) {
                     this.sortsOrder.push(column);
+                } else {
+                    Vue.delete(this.sorts, column);
                 }
                 Vue.set(this.sorts, column, sort);
             }

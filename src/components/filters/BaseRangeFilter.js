@@ -8,19 +8,25 @@ export default {
         }
     },
     computed: {
-        filterComponents() {
-            return this.filter.split(this.sep);
+        range() {
+            let [left, right] = this.filter.split(this.sep);
+            if (left === undefined) {
+                left = "";
+            }
+            if (right === undefined) {
+                right = "";
+            }
+            return [left, right];
         },
         left() {
-            return this.filterComponents[0];
+            return this.range[0];
         },
         right() {
-            return this.filterComponents[1];
+            return this.range[1];
         },
     },
     methods: {
         setLeft(left) {
-
             this.emitFilter(left || this.right ? `${left}:${this.right}` : "");
         },
         setRight(right) {
