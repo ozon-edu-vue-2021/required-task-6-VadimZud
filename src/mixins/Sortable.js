@@ -3,6 +3,7 @@ import Vue from "vue"
 export default {
     data() {
         return {
+            sortable: true,
             sorts: {},
             sortsOrder: [],
         };
@@ -23,5 +24,23 @@ export default {
                 Vue.set(this.sorts, column, sort);
             }
         }
-    }
+    },
+    watch: {
+        sorts() {
+            if (this.paginable) {
+                this.pageNumber = 1;
+            }
+            if (this.updateData instanceof Function) {
+                this.updateData();
+            }
+        },
+        sortsOrger() {
+            if (this.paginable) {
+                this.pageNumber = 1;
+            }
+            if (this.updateData instanceof Function) {
+                this.updateData();
+            }
+        },
+    },
 }

@@ -13,5 +13,5 @@ export default {
         emitFilter(filter) {
             this.$emit("filter", { filter, column: this.column });
         }
-    }
+    },
 }

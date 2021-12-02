@@ -3,6 +3,7 @@ import Vue from "vue"
 export default {
     data() {
         return {
+            filterable: true,
             filters: {},
         };
     },
@@ -13,5 +14,15 @@ export default {
                 Vue.set(this.filters, column, filter);
             }
         }
-    }
+    },
+    watch: {
+        filters() {
+            if (this.paginable) {
+                this.pageNumber = 1;
+            }
+            if (this.updateData instanceof Function) {
+                this.updateData();
+            }
+        },
+    },
 }

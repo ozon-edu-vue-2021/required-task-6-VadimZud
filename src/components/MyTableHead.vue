@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div><slot name="sorter"></slot>{{ head }}</div>
+    <div class="title"><slot name="sorter"></slot>{{ head }}</div>
     <slot name="filter"></slot>
   </div>
 </template>
@@ -15,3 +15,10 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.title {
+  display: flex;
+  justify-content: space-between;
+}
+</style>

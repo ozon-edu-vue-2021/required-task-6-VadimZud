@@ -4,24 +4,41 @@ if (window.Worker) {
 }
 
 function updateDataWithoutDebounce(data) {
+    // В реальном проекте здесь будет обращение к API,
+    // у меня здесь ображение к тестовому Web Worker'у
     worker.onmessage = function (e) {
-        data.rows = e.data;
+        data.rows = data.rows.concat(e.data.rows);
+        data.totalPages = data.pageSize ? Math.ceil(e.data.length / data.pageSize) : 1;
         data.bottomLoader = false;
     }
+    let startIndex;
+    let endIndex;
+
+    if (data.infScrollable) {
+        startIndex = data.rows.length;
+        endIndex = startIndex + data.infScrollStepSize;
+    } else if (data.paginable) {
+        startIndex = data.pageSize * (data.pageNumber - 1);
+        endIndex = startIndex + data.pageSize;
+    }
+
     const message = {
         sorts: data.sorts,
         sortsOrder: data.sortsOrder,
         filters: data.filters,
+        startIndex,
+        endIndex,
     };
-    console.log(message);
     worker.postMessage(message);
 }
 
 let timeout;
 
-export function updateData(data) {
+export function updateData(data, clear) {
     data.bottomLoader = true;
-    data.rows = [];
+    if (clear) {
+        data.rows = [];
+    }
 
     if (timeout) {
         clearTimeout(timeout);

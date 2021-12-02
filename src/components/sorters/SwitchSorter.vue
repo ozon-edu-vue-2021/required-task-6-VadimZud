@@ -47,9 +47,7 @@ export default {
 .sort-control {
   display: inline-block;
   cursor: pointer;
-  border: 1px solid black;
   padding: 5px;
-  border-radius: 3px;
 }
 
 .index {

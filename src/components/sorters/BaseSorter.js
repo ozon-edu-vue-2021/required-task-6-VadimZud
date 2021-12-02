@@ -13,5 +13,5 @@ export default {
         emitSort(sort) {
             this.$emit("sort", { sort, column: this.column });
         }
-    }
+    },
 }

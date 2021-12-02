@@ -73,7 +73,7 @@ onmessage = async function (e) {
     const filters = e.data.filters;
 
     let filtered = data;
-    if (filters && filters.length) {
+    if (filters) {
         filtered = data.filter((item) => {
             for (let column of columns) {
                 if (column in filters && !checkers[column](item[column], filters[column])) {
@@ -100,5 +100,15 @@ onmessage = async function (e) {
         });
     }
 
-    postMessage(sorted);
+    const length = sorted.length
+
+    const startIndex = e.data.startIndex ?? 0;
+    const endIndex = e.data.endIndex;
+
+    let rows = sorted;
+    if (endIndex && endIndex > 0) {
+        rows = rows.slice(startIndex, endIndex);
+    }
+
+    postMessage({ rows, length });
 }
