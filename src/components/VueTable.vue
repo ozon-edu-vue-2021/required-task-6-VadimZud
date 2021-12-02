@@ -27,7 +27,7 @@
           :styles="computedCellsStyles[column]"
         >
           <slot :name="`start-${column}-cell`"></slot>
-          <slot :name="`${column}-cell`" :row="row">
+          <slot :name="`${column}-cell`" :row="row" :index="index">
             {{ row[column] }}
           </slot>
           <slot :name="`end-${column}-cell`"></slot>

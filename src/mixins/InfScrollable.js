@@ -6,7 +6,7 @@ export default {
         };
     },
     created() {
-        this.observer = new IntersectionObserver(
+        this.infScrollObserver = new IntersectionObserver(
             (entries, observer) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -31,7 +31,7 @@ export default {
                     if (triggerIndex > 0) {
                         const target = this.$el.querySelector(`tbody tr:nth-child(${triggerIndex})`);
                         if (target) {
-                            this.observer.observe(target);
+                            this.infScrollObserver.observe(target);
                         }
                     }
                 });
@@ -39,7 +39,7 @@ export default {
         },
         infScrollable() {
             if (!this.infScrollable) {
-                this.observer.disconnect();
+                this.infScrollObserver.disconnect();
             }
         }
     },
