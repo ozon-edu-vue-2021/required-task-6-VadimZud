@@ -25,15 +25,22 @@ export default {
     },
     watch: {
         rows() {
-            this.$nextTick(() => {
-                const triggerIndex = this.rows.length - this.infScrollTriggerOffset;
-                if (triggerIndex > 0) {
-                    const target = this.$el.querySelector(`tbody tr:nth-child(${triggerIndex})`);
-                    if (target) {
-                        this.observer.observe(target);
+            if (this.infScrollable) {
+                this.$nextTick(() => {
+                    const triggerIndex = this.rows.length - this.infScrollTriggerOffset;
+                    if (triggerIndex > 0) {
+                        const target = this.$el.querySelector(`tbody tr:nth-child(${triggerIndex})`);
+                        if (target) {
+                            this.observer.observe(target);
+                        }
                     }
-                }
-            });
+                });
+            }
         },
+        infScrollable() {
+            if (!this.infScrollable) {
+                this.observer.disconnect();
+            }
+        }
     },
 }
