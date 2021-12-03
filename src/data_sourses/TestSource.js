@@ -16,7 +16,7 @@ function updateDataWithoutDebounce(data) {
 
     if (data.infScrollable) {
         startIndex = data.rows.length;
-        endIndex = startIndex + data.infScrollStepSize;
+        endIndex = startIndex ? startIndex + data.infScrollStepSize : data.infScrollStartSize;
     } else if (data.paginable) {
         startIndex = data.pageSize * (data.pageNumber - 1);
         endIndex = startIndex + data.pageSize;

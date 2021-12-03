@@ -19,7 +19,31 @@
     </thead>
     <tbody :class="tbodyClass" :style="tbodyStyle">
       <slot name="start-tbody"></slot>
-      <tr v-for="(row, index) in rows" :key="getKey ? getKey(row) : index">
+      <!-- <recycle-scroller
+        v-if="useVirtualScroll"
+        :style="`height: ${virtualScrollHeight * virtualScrollCount}px`"
+        :items="rows"
+        :item-size="virtualScrollHeight"
+        :key-field="keyField"
+        v-slot="{ item }"
+      >
+        <tr :style="`height: ${virtualScrollHeight}px`">
+          <td
+            v-for="column in columns"
+            :key="column"
+            :class="computedCellsClasses[column]"
+            :styles="computedCellsStyles[column]"
+          >
+            <slot :name="`start-${column}-cell`"></slot>
+            <slot :name="`${column}-cell`" :row="item" :index="index">
+              {{ item[column] }}
+            </slot>
+            <slot :name="`end-${column}-cell`"></slot>
+          </td>
+        </tr>
+      </recycle-scroller> -->
+      <!-- <template v-else> -->
+      <tr v-for="(row, index) in rows" :key="row[keyField] ?? index">
         <td
           v-for="column in columns"
           :key="column"
@@ -33,6 +57,7 @@
           <slot :name="`end-${column}-cell`"></slot>
         </td>
       </tr>
+      <!-- </template> -->
       <slot name="end-tbody"></slot>
     </tbody>
     <slot name="end-table"></slot>
@@ -40,6 +65,8 @@
 </template>
 
 <script>
+// import { RecycleScroller } from "vue-virtual-scroller";
+
 export default {
   name: "VueTable",
   props: {
@@ -55,9 +82,9 @@ export default {
       type: Object,
       default: Object,
     },
-    getKey: {
-      type: Function,
-      default: null,
+    keyField: {
+      type: String,
+      default: "id",
     },
     headsClasses: {
       type: Object,
@@ -106,6 +133,18 @@ export default {
     tbodyStyle: {
       type: Object,
       default: Object,
+    },
+    useVirtualScroll: {
+      type: Boolean,
+      default: false,
+    },
+    virtualScrollHeight: {
+      type: Number,
+      default: null,
+    },
+    virtualScrollCount: {
+      type: Number,
+      default: null,
     },
   },
   computed: {
@@ -156,5 +195,8 @@ export default {
       }, {});
     },
   },
+  // components: {
+  //   RecycleScroller,
+  // },
 };
 </script>

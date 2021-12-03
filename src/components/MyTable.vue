@@ -6,20 +6,27 @@
         v-model="infScrollable"
       />
     </div>
+    <div>
+      Использовать виртуальный скролл<input
+        type="checkbox"
+        v-model="virtualScrollable"
+      />
+    </div>
     <paginator
-      v-if="!infScrollable"
+      v-if="!infScrollable && !virtualScrollable"
       :pageSize="pageSize"
       :pageNumber="pageNumber"
       :totalPages="totalPages"
       @paginate="updatePagination($event)"
     />
     <vue-table
-      :rows="rows"
+      :rows="computedRows"
       :columns="columns"
       :columnsHeads="columnsHeads"
-      :getKey="(row) => row.id"
+      :keyField="keyField"
       :defaultHeadClass="{ ['table-head']: true }"
       :defaultCellClass="{ ['table-cell']: true }"
+      :useVirtualScroll="virtualScrollable"
       class="table"
     >
       <template v-for="column in columns" #[`${column}-head`]="{ head }">
@@ -50,7 +57,7 @@
       /></template>
     </vue-table>
     <paginator
-      v-if="!infScrollable"
+      v-if="!infScrollable && !virtualScrollable"
       :pageSize="pageSize"
       :pageNumber="pageNumber"
       :totalPages="totalPages"
@@ -79,7 +86,9 @@ export default {
   data() {
     return {
       rows: [],
+
       columns: ["id", "age", "name", "login", "email"],
+      keyField: "id",
       columnsHeads: {
         id: "ID",
         age: "Возраст",
@@ -87,6 +96,7 @@ export default {
         login: "Логин",
         email: "EMail",
       },
+
       filtersTypes: {
         id: "number",
         age: "number",
@@ -101,11 +111,21 @@ export default {
         login: SingleFilter,
         email: SingleFilter,
       },
+
       bottomLoader: false,
+
+      pageSize: 0,
       totalPages: 0,
+
       infScrollable: false,
-      infScrollStepSize: 100,
+      infScrollStartSize: 100,
+      infScrollStepSize: 50,
       infScrollTriggerOffset: 50,
+
+      virtualScrollable: false,
+      // virtualScrollInitStartSize: 10,
+      // virtualScrollInitStepSize: 5,
+      // virtualScrollBufferSize: 100,
     };
   },
   computed: {
@@ -117,6 +137,12 @@ export default {
         res[column] = index + 1;
         return res;
       }, {});
+    },
+    computedRows() {
+      return this.virtualScrollable ? this.virtualScrollRows : this.rows;
+    },
+    computedGetKey() {
+      return this.virtualScrollable ? this.virtualScrollGetKey : this.getKey;
     },
   },
   methods: {
