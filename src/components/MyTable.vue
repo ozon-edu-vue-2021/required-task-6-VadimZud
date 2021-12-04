@@ -6,6 +6,12 @@
         v-model="infScrollable"
       />
     </div>
+    <div>
+      Использовать виртуальный скролл<input
+        type="checkbox"
+        v-model="virtualScrollable"
+      />
+    </div>
     <paginator
       v-if="!infScrollable"
       :pageSize="pageSize"
@@ -14,14 +20,20 @@
       @paginate="updatePagination($event)"
     />
     <vue-table
-      :rows="rows"
+      :rows="computedRows"
       :columns="columns"
       :columnsHeads="columnsHeads"
-      :getKey="(row) => row.id"
+      :getKey="computedGetKey"
       :defaultHeadClass="{ ['table-head']: true }"
       :defaultCellClass="{ ['table-cell']: true }"
+      :useVirtualScroll="virtualScrollable"
+      :virtualScrollHeight="20"
+      :virtualScrollCount="25"
       class="table"
     >
+      <template v-if="virtualScrollable" #start-tbody
+        ><tr :colspan="rowSize" :style="`height: ${virtualScrollFillerSize}px`"
+      /></template>
       <template v-for="column in columns" #[`${column}-head`]="{ head }">
         <my-table-head :head="head" :key="column">
           <template #sorter
@@ -69,16 +81,18 @@ import Filterable from "../mixins/Filterable";
 import Sortable from "../mixins/Sortable";
 import Paginable from "../mixins/Paginable";
 import InfScrollable from "../mixins/InfScrollable";
+import virtualScrollable from "../mixins/virtualScrollable";
 import { updateData } from "../data_sourses/TestSource";
 import MyTableHead from "./MyTableHead.vue";
 import Paginator from "./paginators/Paginator.vue";
 
 export default {
   name: "MyTable",
-  mixins: [Filterable, Sortable, Paginable, InfScrollable],
+  mixins: [Filterable, Sortable, Paginable, InfScrollable, virtualScrollable],
   data() {
     return {
       rows: [],
+
       columns: ["id", "age", "name", "login", "email"],
       columnsHeads: {
         id: "ID",
@@ -87,6 +101,7 @@ export default {
         login: "Логин",
         email: "EMail",
       },
+
       filtersTypes: {
         id: "number",
         age: "number",
@@ -101,11 +116,21 @@ export default {
         login: SingleFilter,
         email: SingleFilter,
       },
+
       bottomLoader: false,
+
+      pageSize: 20,
       totalPages: 0,
+
       infScrollable: false,
-      infScrollStepSize: 100,
+      infScrollStartSize: 100,
+      infScrollStepSize: 50,
       infScrollTriggerOffset: 50,
+
+      virtualScrollable: false,
+      virtualScrollStartSize: 60,
+      virtualScrollBufferSize: 50,
+      virtualScrollRowHeight: 20,
     };
   },
   computed: {
@@ -117,6 +142,15 @@ export default {
         res[column] = index + 1;
         return res;
       }, {});
+    },
+    computedRows() {
+      return this.virtualScrollable ? this.virtualScrollRows : this.rows;
+    },
+    computedGetKey() {
+      return this.virtualScrollable ? this.virtualScrollGetKey : this.getKey;
+    },
+    getKey(row) {
+      return row.id;
     },
   },
   methods: {
@@ -160,6 +194,7 @@ export default {
 .table-head,
 .table-cell {
   border-left: 1px solid #aaa;
+  height: 20px;
 }
 
 .table-head:first-child,

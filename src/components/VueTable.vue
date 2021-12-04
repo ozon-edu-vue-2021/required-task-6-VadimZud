@@ -19,7 +19,7 @@
     </thead>
     <tbody :class="tbodyClass" :style="tbodyStyle">
       <slot name="start-tbody"></slot>
-      <tr v-for="(row, index) in rows" :key="getKey ? getKey(row) : index">
+      <tr v-for="(row, index) in rows" :key="getKey(row, index)">
         <td
           v-for="column in columns"
           :key="column"
@@ -57,7 +57,7 @@ export default {
     },
     getKey: {
       type: Function,
-      default: null,
+      default: (row, index) => index,
     },
     headsClasses: {
       type: Object,
