@@ -2,152 +2,104 @@ export default {
     data() {
         return {
             virtualScrollable: true,
-            virtualScrollStartIndex: 0,
-            virtualScrollKeyOffset: 0,
-            virtualScrollFillerSize: 0,
+
+            virtualScrollViewportHeight: 0,
+            virtualScrollStartPosition: 0,
+            virtualScrollCurrentPosition: 0,
         };
     },
     created() {
-        this.virtualScrollUpObserver = new IntersectionObserver(
-            (entries, observer) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        if (this.ignoreUp) {
-                            this.ignoreUp = false;
-                            return;
-                        }
-                        observer.disconnect();
-                        this.virtualScrollDownObserver.disconnect();
-                        this.ignoreDown = true;
-                        const move = this.virtualScrollSizeToStart < this.virtualScrollMoveSize ?
-                            this.virtualScrollSizeToStart : this.virtualScrollMoveSize;
-                        this.virtualScrollStartIndex -= move;
-                        this.virtualScrollKeyOffset = (this.virtualScrollWindowSize + this.virtualScrollKeyOffset - move) % this.virtualScrollWindowSize;
-                        this.virtualScrollFillerSize -= this.virtualScrollRowHeight * move;
-                        this.virtualScrollObserveTrigger();
-                        return;
-                    } else {
-                        this.ignoreUp = false;
-                    }
-                })
-            },
-            {
-                root: null,
-                rootMargin: "0px",
-                threshold: 0,
-            },
-        );
-
-        this.virtualScrollDownObserver = new IntersectionObserver(
-            (entries, observer) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        if (this.ignoreDown) {
-                            this.ignoreDown = false;
-                            return;
-                        }
-                        observer.disconnect();
-                        this.virtualScrollUpObserver.disconnect();
-                        this.ignoreUp = true;
-                        const move = this.virtualScrollSizeToEnd < this.virtualScrollMoveSize ?
-                            this.virtualScrollSizeToEnd : this.virtualScrollMoveSize;
-                        this.virtualScrollStartIndex += move;
-                        this.virtualScrollKeyOffset = (this.virtualScrollKeyOffset + move) % this.virtualScrollWindowSize;
-                        this.virtualScrollFillerSize += this.virtualScrollRowHeight * move;
-                        this.virtualScrollObserveTrigger();
-                        return;
-                    } else {
-                        this.ignoreDown = false;
-                    }
-                })
-            },
-            {
-                root: null,
-                rootMargin: "0px",
-                threshold: 0,
-            },
-        )
+        this.virtualScrollUpdateViewportHeight();
+        this.virtualScrollUpdateCurrentPosition();
+        window.addEventListener("resize", this.virtualScrollUpdateViewportHeight);
+        window.addEventListener("scroll", this.virtualScrollUpdateCurrentPosition);
+        if (this.virtualScrollable) {
+            this.virtualScrollTopFiller = document.querySelector("#virtualScrollTopFiller");
+            this.virtualScrollBottomFiller = document.querySelector("#virtualScrollBottomFiller");
+            this.virtualScrollUpdateStartPosition();
+            window.addEventListener("resize", this.virtualScrollUpdateStartPosition);
+        }
     },
-    mounted() {
-        this.virtualScrollObserveTrigger();
+    unmounted() {
+        window.removeEventListener("resize", this.virtualScrollUpdateViewportHeight);
+        window.removeEventListener("scroll", this.virtualScrollUpdateCurrentPosition);
+        if (this.virtualScrollable) {
+            window.removeEventListener("resize", this.virtualScrollUpdateStartPosition);
+        }
     },
     computed: {
-        virtualScrollTriggerOffset() {
-            return Math.floor(this.virtualScrollBufferSize / 2);
+        virtualScrollListSize() {
+            const rowHeight = this.virtualScrollRowHeight;
+            return rowHeight * this.rows.length;
         },
-        virtualScrollMoveSize() {
-            return Math.floor(this.virtualScrollTriggerOffset / 2);
+        virtualScrollListPosition() {
+            const currentPosition = this.virtualScrollCurrentPosition;
+            const startPosition = this.virtualScrollStartPosition;
+            return currentPosition - startPosition;
         },
-        virtualScrollEndIndex() {
-            return this.virtualScrollStartIndex + this.virtualScrollWindowSize;
+        virtualScrollTopFillerCount() {
+            const listPosition = this.virtualScrollListPosition;
+            const rowHeight = this.virtualScrollRowHeight;
+            const bufferSize = this.virtualScrollBufferSize;
+            const topFilterCount = Math.floor(listPosition / rowHeight) - bufferSize;
+            return topFilterCount > 0 ? topFilterCount : 0;
+        },
+        virtualScrollViewportCount() {
+            const rowHeight = this.virtualScrollRowHeight;
+            const bufferSize = this.virtualScrollBufferSize;
+            const viewportHeight = this.virtualScrollViewportHeight;
+            return Math.ceil(viewportHeight / rowHeight) + 2 * bufferSize;
+        },
+        virtualScrollBottomFillerCount() {
+            const topFillerCount = this.virtualScrollTopFillerCount;
+            const viewportCount = this.virtualScrollViewportCount;
+            const bottomFilterCount = this.rows.length - topFillerCount - viewportCount;
+            return bottomFilterCount > 0 ? bottomFilterCount : 0;
+        },
+        virtualScrollTopFillerSize() {
+            const topFillerCount = this.virtualScrollTopFillerCount;
+            const rowHeight = this.virtualScrollRowHeight;
+            return topFillerCount * rowHeight;
+        },
+        virtualScrollBottomFillerSize() {
+            const bottomFillerCount = this.virtualScrollBottomFillerCount;
+            const rowHeight = this.virtualScrollRowHeight;
+            return bottomFillerCount * rowHeight;
         },
         virtualScrollRows() {
-            return this.rows.slice(this.virtualScrollStartIndex, this.virtualScrollEndIndex);
-        },
-        virtualScrollSizeToStart() {
-            return this.virtualScrollStartIndex;
-        },
-        virtualScrollSizeToEnd() {
-            return this.rows.length - this.virtualScrollEndIndex;
-        },
-        virtualScrollWindowSize() {
-            return this.virtualScrollStartSize + this.virtualScrollBufferSize;
+            const topFillerCount = this.virtualScrollTopFillerCount;
+            const viewportCount = this.virtualScrollViewportCount;
+            return this.rows.slice(topFillerCount, topFillerCount + viewportCount);
         },
     },
     methods: {
-        virtualScrollObserveTrigger() {
-            this.$nextTick(() => {
-                if (this.virtualScrollStartIndex > 0) {
-                    let triggerUpIndex = this.virtualScrollTriggerOffset + 1;
-                    const target = this.$el.querySelector(`tbody tr:nth-child(${triggerUpIndex})`);
-                    if (target) {
-                        this.virtualScrollUpObserver.observe(target);
-                    }
-                }
-                if (this.virtualScrollEndIndex < this.rows.length) {
-                    let triggerDownIndex = this.virtualScrollWindowSize - this.virtualScrollTriggerOffset + 1;
-                    const target = this.$el.querySelector(`tbody tr:nth-child(${triggerDownIndex})`);
-                    if (target) {
-                        this.virtualScrollDownObserver.observe(target);
-                    }
-                }
-            });
+        virtualScrollUpdateViewportHeight() {
+            this.virtualScrollViewportHeight = document.documentElement.clientHeight;
+        },
+        virtualScrollUpdateStartPosition() {
+            this.virtualScrollStartPosition = this.virtualScrollTopFiller.getBoundingClientRect().top + window.pageYOffset;
+        },
+        virtualScrollUpdateCurrentPosition() {
+            this.virtualScrollCurrentPosition = window.pageYOffset;
         },
         virtualScrollGetKey(row, index) {
-            return (index + this.virtualScrollKeyOffset) % this.virtualScrollWindowSize;
+            const topFillerCount = this.virtualScrollTopFillerCount;
+            const viewportCount = this.virtualScrollViewportCount;
+            return (index + topFillerCount) % viewportCount;
         }
     },
     watch: {
         virtualScrollable() {
             if (this.virtualScrollable) {
-                this.virtualScrollStartIndex = 0;
-                this.virtualScrollKeyOffset = 0;
-                this.virtualScrollFillerSize = 0;
-                this.virtualScrollObserveTrigger();
+                this.$nextTick(() => {
+                    this.virtualScrollTopFiller = document.querySelector("#virtualScrollTopFiller");
+                    this.virtualScrollBottomFiller = document.querySelector("#virtualScrollBottomFiller");
+                    this.virtualScrollUpdateStartPosition();
+                    window.addEventListener("resize", this.virtualScrollUpdateStartPosition);
+                });
             } else {
-                this.virtualScrollUpObserver.disconnect();
-                this.virtualScrollDownObserver.disconnect();
-            }
-            if (this.infScrollable) {
-                this.infScrollObserveTrigger();
+                window.removeEventListener("resize", this.virtualScrollUpdateStartPosition);
             }
         },
-        rows() {
-            if (this.virtualScrollable) {
-                this.virtualScrollUpObserver.disconnect();
-                this.virtualScrollDownObserver.disconnect();
-                this.virtualScrollObserveTrigger();
-            }
-        },
-        virtualScrollStartIndex() {
-            if (this.virtualScrollable && this.infScrollable) {
-                this.infScrollObserveTrigger();
-            }
-        },
-        virtualScrollWindowSize() {
-            if (this.virtualScrollable && this.infScrollable) {
-                this.infScrollObserveTrigger();
-            }
-        },
-    }
+    },
 }

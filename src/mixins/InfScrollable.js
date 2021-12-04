@@ -2,60 +2,64 @@ export default {
     data() {
         return {
             infScrollable: true,
+
+            infScrollViewportHeight: 0,
+            infScrollBottomPosition: 0,
         };
     },
     created() {
-        this.infScrollObserver = new IntersectionObserver(
-            (entries, observer) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        observer.disconnect();
-                        this.updateData(true);
-                        return;
-                    }
-                });
-            },
-            {
-                root: null,
-                rootMargin: "0px",
-                threshold: 0,
-            }
-        );
-    },
-    methods: {
-        infScrollObserveTrigger() {
-            this.$nextTick(() => {
-                let triggerIndex = this.rows.length - this.infScrollTriggerOffset;
-                let lastIndex = this.rows.length
-                if (this.virtualScrollable) {
-                    triggerIndex -= this.virtualScrollStartIndex + 1;
-                    lastIndex -= this.virtualScrollStartIndex + 1;
-                }
-                if (triggerIndex > 0 && (!this.virtualScrollable || triggerIndex <= this.virtualScrollWindowSize + 1)) {
-                    const target = this.$el.querySelector(`tbody tr:nth-child(${triggerIndex})`);
-                    if (target) {
-                        this.infScrollObserver.observe(target);
-                    }
-                }
-
-                if (lastIndex > 0 && (!this.virtualScrollable || lastIndex <= this.virtualScrollWindowSize + 1)) {
-                    const target = this.$el.querySelector(`tbody tr:nth-child(${lastIndex})`);
-                    if (target) {
-                        this.infScrollObserver.observe(target);
-                    }
-                }
-            });
+        this.infScrollUpdateViewportHeight();
+        this.infScrollUpdateCurrentPosition();
+        window.addEventListener("resize", this.infScrollUpdateViewportHeight);
+        window.addEventListener("scroll", this.infScrollUpdateCurrentPosition);
+        if (this.infScrollable) {
+            this.infScrollBottomAnchor = document.querySelector("#infScrollBottomAnchor");
+            this.infScrollUpdateBottomPosition();
+            window.addEventListener("resize", this.infScrollUpdateBottomPosition);
         }
     },
-    watch: {
-        rows() {
-            if (this.infScrollable) {
-                this.infScrollObserveTrigger();
+    unmounted() {
+        window.removeEventListener("resize", this.infScrollUpdateViewportHeight);
+        window.removeEventListener("scroll", this.infScrollUpdateCurrentPosition);
+        if (this.infScrollable) {
+            window.removeEventListener("resize", this.infScrollUpdateBottomPosition);
+        }
+    },
+    methods: {
+        infScrollUpdateViewportHeight() {
+            this.infScrollViewportHeight = document.documentElement.clientHeight;
+        },
+        infScrollUpdateBottomPosition() {
+            this.infScrollBottomPosition = this.infScrollBottomAnchor.getBoundingClientRect().top + window.pageYOffset;
+        },
+        infScrollUpdateCurrentPosition() {
+            const currentPosition = window.pageYOffset;
+            const viewportHeight = this.infScrollViewportHeight;
+            const bottomPosition = this.infScrollBottomPosition;
+            const triggerOffset = this.infScrollTriggerOffset;
+
+            if ((bottomPosition - currentPosition - viewportHeight) < triggerOffset) {
+                this.updateData(true);
             }
         },
+    },
+    watch: {
         infScrollable() {
-            if (!this.infScrollable) {
-                this.infScrollObserver.disconnect();
+            if (this.infScrollable) {
+                this.$nextTick(() => {
+                    this.infScrollBottomAnchor = document.querySelector("#infScrollBottomAnchor");
+                    this.infScrollUpdateBottomPosition();
+                    window.addEventListener("resize", this.infScrollUpdateBottomPosition);
+                });
+            } else {
+                window.removeEventListener("resize", this.infScrollUpdateBottomPosition);
+            }
+        },
+        rows() {
+            if (this.infScrollable) {
+                this.$nextTick(() => {
+                    this.infScrollUpdateBottomPosition();
+                });
             }
         }
     },

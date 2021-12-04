@@ -11,7 +11,7 @@
           :style="$options.computedHeadsStyles(props)[column]"
         >
           <slot
-            :name="`${props.column}-head`"
+            :name="`${column}-head`"
             :head="$options.computedColumnsHeads(props)[column]"
           >
             {{ $options.computedColumnsHeads(props)[column] }}
