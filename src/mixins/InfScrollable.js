@@ -18,7 +18,7 @@ export default {
             {
                 root: null,
                 rootMargin: "0px",
-                threshold: 1,
+                threshold: 0,
             }
         );
     },
@@ -27,20 +27,18 @@ export default {
             this.$nextTick(() => {
                 let triggerIndex = this.rows.length - this.infScrollTriggerOffset;
                 let lastIndex = this.rows.length
-                // if (this.virtualScrollable) {
-                //     triggerIndex -= this.virtualScrollStartIndex;
-                //     lastIndex -= this.virtualScrollStartIndex;
-                // }
-                // if (triggerIndex > 0 && (!this.virtualScrollable || triggerIndex <= this.virtualScrollWindowSize)) {
-                if (triggerIndex > 0) {
+                if (this.virtualScrollable) {
+                    triggerIndex -= this.virtualScrollStartIndex + 1;
+                    lastIndex -= this.virtualScrollStartIndex + 1;
+                }
+                if (triggerIndex > 0 && (!this.virtualScrollable || triggerIndex <= this.virtualScrollWindowSize + 1)) {
                     const target = this.$el.querySelector(`tbody tr:nth-child(${triggerIndex})`);
                     if (target) {
                         this.infScrollObserver.observe(target);
                     }
                 }
 
-                // if (lastIndex > 0 && (!this.virtualScrollable || lastIndex <= this.virtualScrollWindowSize)) {
-                if (lastIndex > 0) {
+                if (lastIndex > 0 && (!this.virtualScrollable || lastIndex <= this.virtualScrollWindowSize + 1)) {
                     const target = this.$el.querySelector(`tbody tr:nth-child(${lastIndex})`);
                     if (target) {
                         this.infScrollObserver.observe(target);
