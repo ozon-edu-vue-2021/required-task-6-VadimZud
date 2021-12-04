@@ -31,9 +31,13 @@
       :virtualScrollCount="25"
       class="table"
     >
-      <template v-if="virtualScrollable" #start-tbody
-        ><tr :colspan="rowSize" :style="`height: ${virtualScrollFillerSize}px`"
-      /></template>
+      <template v-if="virtualScrollable" #start-tbody>
+        <tr
+          :colspan="rowSize"
+          id="virtualScrollTopFiller"
+          :style="`height: ${virtualScrollTopFillerSize}px`"
+        />
+      </template>
       <template v-for="column in columns" #[`${column}-head`]="{ head }">
         <my-table-head :head="head" :key="column">
           <template #sorter
@@ -57,9 +61,20 @@
       <template #email-cell="{ row }">
         <a :href="`mailto:${row.email}`">{{ row.email }}</a>
       </template>
-      <template v-if="bottomLoader" #end-tbody
-        ><table-loader :colspan="rowSize"
-      /></template>
+      <template #end-tbody>
+        <tr
+          v-if="virtualScrollable"
+          :colspan="rowSize"
+          id="virtualScrollBottomFiller"
+          :style="`height: ${virtualScrollBottomFillerSize}px`"
+        />
+        <tr
+          v-if="infScrollable"
+          :colspan="rowSize"
+          id="infScrollBottomAnchor"
+        />
+        <table-loader v-if="bottomLoader" :colspan="rowSize" />
+      </template>
     </vue-table>
     <paginator
       v-if="!infScrollable"
@@ -125,11 +140,10 @@ export default {
       infScrollable: false,
       infScrollStartSize: 100,
       infScrollStepSize: 50,
-      infScrollTriggerOffset: 50,
+      infScrollTriggerOffset: 1000,
 
       virtualScrollable: false,
-      virtualScrollStartSize: 60,
-      virtualScrollBufferSize: 50,
+      virtualScrollBufferSize: 10,
       virtualScrollRowHeight: 20,
     };
   },
