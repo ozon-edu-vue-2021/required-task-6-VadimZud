@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import VueTable from "./VueTableFunctional.vue";
+import VueTable from "./VueTable.vue";
 import TableLoader from "./loaders/TableLoader.vue";
 import SingleFilter from "./filters/SingleFilter.vue";
 import RangeFilter from "./filters/RangeFilter.vue";
