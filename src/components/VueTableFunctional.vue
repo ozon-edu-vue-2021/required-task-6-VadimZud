@@ -43,6 +43,12 @@
 </template>
 
 <script>
+let columnsHeads;
+let headsClasses;
+let headsStyles;
+let cellsClasses;
+let cellsStyles;
+
 export default {
   name: "VueTable",
   props: {
@@ -112,13 +118,20 @@ export default {
     },
   },
   computedColumnsHeads(props) {
-    return props.columns.reduce((res, column) => {
+    if (columnsHeads) {
+      return columnsHeads;
+    }
+    columnsHeads = props.columns.reduce((res, column) => {
       res[column] = props.columnsHeads[column] || column;
       return res;
     }, {});
+    return columnsHeads;
   },
   computedHeadsClasses(props) {
-    return props.columns.reduce((res, column) => {
+    if (headsClasses) {
+      return headsClasses;
+    }
+    headsClasses = props.columns.reduce((res, column) => {
       res[column] = Object.assign(
         {},
         props.defaultHeadClass,
@@ -126,9 +139,13 @@ export default {
       );
       return res;
     }, {});
+    return headsClasses;
   },
   computedHeadsStyles(props) {
-    return props.columns.reduce((res, column) => {
+    if (headsStyles) {
+      return headsStyles;
+    }
+    headsStyles = props.columns.reduce((res, column) => {
       res[column] = Object.assign(
         {},
         props.defaultHeadStyle,
@@ -136,9 +153,13 @@ export default {
       );
       return res;
     }, {});
+    return headsStyles;
   },
   computedCellsClasses(props) {
-    return props.columns.reduce((res, column) => {
+    if (cellsClasses) {
+      return cellsClasses;
+    }
+    cellsClasses = props.columns.reduce((res, column) => {
       res[column] = Object.assign(
         {},
         props.defaultCellClass,
@@ -146,9 +167,13 @@ export default {
       );
       return res;
     }, {});
+    return cellsClasses;
   },
   computedCellsStyles(props) {
-    return props.columns.reduce((res, column) => {
+    if (cellsStyles) {
+      return cellsStyles;
+    }
+    cellsStyles = props.columns.reduce((res, column) => {
       res[column] = Object.assign(
         {},
         props.defaultCellStyle,
@@ -156,6 +181,7 @@ export default {
       );
       return res;
     }, {});
+    return cellsStyles;
   },
 };
 </script>

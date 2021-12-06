@@ -11,17 +11,17 @@ export default {
         this.infScrollUpdateViewportHeight();
         this.infScrollUpdateCurrentPosition();
         window.addEventListener("resize", this.infScrollUpdateViewportHeight);
-        window.addEventListener("scroll", this.infScrollUpdateCurrentPosition);
         if (this.infScrollable) {
             this.infScrollBottomAnchor = document.querySelector("#infScrollBottomAnchor");
             this.infScrollUpdateBottomPosition();
+            window.addEventListener("scroll", this.infScrollUpdateCurrentPosition);
             window.addEventListener("resize", this.infScrollUpdateBottomPosition);
         }
     },
     unmounted() {
         window.removeEventListener("resize", this.infScrollUpdateViewportHeight);
-        window.removeEventListener("scroll", this.infScrollUpdateCurrentPosition);
         if (this.infScrollable) {
+            window.removeEventListener("scroll", this.infScrollUpdateCurrentPosition);
             window.removeEventListener("resize", this.infScrollUpdateBottomPosition);
         }
     },
@@ -49,9 +49,11 @@ export default {
                 this.$nextTick(() => {
                     this.infScrollBottomAnchor = document.querySelector("#infScrollBottomAnchor");
                     this.infScrollUpdateBottomPosition();
+                    window.addEventListener("scroll", this.infScrollUpdateCurrentPosition);
                     window.addEventListener("resize", this.infScrollUpdateBottomPosition);
                 });
             } else {
+                window.removeEventListener("scroll", this.infScrollUpdateCurrentPosition);
                 window.removeEventListener("resize", this.infScrollUpdateBottomPosition);
             }
         },

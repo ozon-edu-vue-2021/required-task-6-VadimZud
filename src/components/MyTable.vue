@@ -134,7 +134,7 @@ export default {
 
       bottomLoader: false,
 
-      pageSize: 20,
+      pageSize: 500,
       totalPages: 0,
 
       infScrollable: false,
